@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screen_recording/flutter_screen_recording.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,7 +8,7 @@ import 'package:quiver/async.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatefulWidget  {
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -19,11 +18,17 @@ class _MyAppState extends State<MyApp> {
   int _time = 0;
 
   requestPermissions() async {
-    await PermissionHandler().requestPermissions([
-      PermissionGroup.storage,
-      PermissionGroup.photos,
-      PermissionGroup.microphone,
-    ]);
+    // await PermissionHandler().requestPermissions([
+    //   PermissionGroup.storage,
+    //   PermissionGroup.photos,
+    //   PermissionGroup.microphone,
+    // ]);
+
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.photos,
+      Permission.storage,
+      Permission.microphone,
+    ].request();
   }
 
   @override
@@ -66,11 +71,18 @@ class _MyAppState extends State<MyApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('Time: $_time\n'),
+
             !recording
                 ? Center(
                     child: RaisedButton(
                       child: Text("Record Screen"),
-                      onPressed: () => startScreenRecord(false),
+                      onPressed: () {
+                        setState(() {
+                          recording = !recording;
+                          print("Recording stopped at $_time");
+                        });
+                        startScreenRecord(false);
+                      },
                     ),
                   )
                 : Container(),
@@ -78,13 +90,25 @@ class _MyAppState extends State<MyApp> {
                 ? Center(
                     child: RaisedButton(
                       child: Text("Record Screen & audio"),
-                      onPressed: () => startScreenRecord(true),
+                      onPressed:() {
+                        setState(() {
+                          recording = !recording;
+                          print("Recording stopped at $_time");
+                        });
+                        startScreenRecord(true , pathName: "/storage/emulated/0/Download");
+                      } ,
                     ),
                   )
                 : Center(
                     child: RaisedButton(
                       child: Text("Stop Record"),
-                      onPressed: () => stopScreenRecord(),
+                      onPressed: () {
+                        setState(() {
+                          recording = !recording;
+                          print("Recording stopped at $_time");
+                        });
+                        stopScreenRecord();
+                      },
                     ),
                   )
           ],
@@ -93,30 +117,44 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  startScreenRecord(bool audio) async {
+  startScreenRecord(bool audio ,{String pathName}) async {
     bool start = false;
     await Future.delayed(const Duration(milliseconds: 1000));
 
     if (audio) {
-      start = await FlutterScreenRecording.startRecordScreenAndAudio("Title" + _time.toString(),  titleNotification:"dsffad", messageNotification: "sdffd");
+      int width, height;
+      start = await FlutterScreenRecording.startRecordScreenAndAudio(
+          "Title" + _time.toString(),
+          path: pathName,
+          width: width, height: height,
+          titleNotification: "dsffad",
+          messageNotification: "sdffd");
     } else {
-      start = await FlutterScreenRecording.startRecordScreen("Title", titleNotification:"dsffad", messageNotification: "sdffd");
+      int width, height;
+
+      // // Record screen at quarter size, ie file size reduced by x16
+      // Size win = window.physicalSize / 4; // Reduce size
+      // width = win.width ~/ 10 * 10; // Round to multiple of 10
+      // height = win.height ~/ 10 * 10;
+      start = await FlutterScreenRecording.startRecordScreen(
+        "Title" + _time.toString(),
+          path: pathName,
+          width: width, height: height,
+          titleNotification: "dsffad", messageNotification: "sdffd",
+      );
     }
 
-    if (start) {
+   /* if (start) {
       setState(() => recording = !recording);
       print("Recording started at $_time");
-    }
+    }*/
 
     return start;
   }
 
   stopScreenRecord() async {
     String path = await FlutterScreenRecording.stopRecordScreen;
-    setState(() {
-      recording = !recording;
-      print("Recording stopped at $_time");
-    });
+
     File videoFile = File(path);
     int fileSizeBytes = await videoFile.length();
     print('Video file size $fileSizeBytes bytes');
@@ -125,4 +163,15 @@ class _MyAppState extends State<MyApp> {
     print(path);
     OpenFile.open(path);
   }
+/* Screen Capture
+  startScreenCapture() async {
+    String path = await FlutterScreenRecording.startScreenCapture(name, path);
+
+    File captureFile = File(path);
+    int fileSizeBytes = await captureFile.length();
+    print('Video file size $fileSizeBytes bytes');
+
+    print("Saved image at : $path");
+    OpenFile.open(path);
+  }*/
 }

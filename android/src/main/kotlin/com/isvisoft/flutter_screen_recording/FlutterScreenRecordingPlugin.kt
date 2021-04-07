@@ -22,7 +22,67 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.File
 import java.io.IOException
-import android.graphics.Point
+/*import android.graphics.Point
+import javax.imageio.ImageReader
+
+import jdk.nashorn.internal.objects.NativeFunction.call
+import java.io.FileOutputStream
+
+import java.awt.Image
+
+import jdk.nashorn.internal.objects.NativeFunction.call
+import java.io.FileOutputStream
+
+import java.io.File
+
+import javax.swing.text.View
+
+import org.omg.CORBA.Environment
+
+import jdk.nashorn.internal.objects.NativeFunction.call
+import java.io.IOException
+
+import java.io.FileNotFoundException
+
+import java.io.FileOutputStream
+
+import java.io.File
+
+import org.omg.CORBA.Environment
+
+import jdk.nashorn.internal.objects.NativeFunction.call
+import java.awt.Canvas
+
+import javax.swing.text.View
+
+import jdk.nashorn.internal.objects.NativeFunction.call
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class FlutterScreenRecordingPlugin(
@@ -38,11 +98,15 @@ class FlutterScreenRecordingPlugin(
     var mVirtualDisplay: VirtualDisplay? = null
     var mDisplayWidth: Int = 1280
     var mDisplayHeight: Int = 720
-    var storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
+   // var storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
+    var storePath: String? = null
+
     var videoName: String? = ""
     var recordAudio: Boolean? = false;
     private val SCREEN_RECORD_REQUEST_CODE = 333
     private val SCREEN_STOP_RECORD_REQUEST_CODE = 334
+
+
 
     private lateinit var _result: MethodChannel.Result
 
@@ -56,8 +120,7 @@ class FlutterScreenRecordingPlugin(
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
         if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 //initMediaRecorder();
@@ -87,6 +150,17 @@ class FlutterScreenRecordingPlugin(
 
                 videoName = call.argument<String?>("name")
                 recordAudio = call.argument<Boolean?>("audio")
+                val width = call.argument<Int?>("width");
+                val height = call.argument<Int?>("height");
+
+
+                println("Path :" + call.argument<String?>("path"))
+                if (call.argument<String?>("path") == null) {
+                    storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
+                } else {
+                    storePath = call.argument<String?>("path") + File.separator
+                }
+                calculeResolution(width, height);
                 initMediaRecorder();
                 startRecordScreen()
                 //result.success(true)
@@ -108,12 +182,32 @@ class FlutterScreenRecordingPlugin(
                 result.success("")
             }
 
-        } else {
+            // Screen capture
+        /*}else if (call.method == "takeScreenCapture"){
+            try {
+
+                val captureName = call.argument<String?>("name")
+                if (call.argument<String?>("path") == null) {
+                    storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
+                } else {
+                    storePath = call.argument<String?>("path") + File.separator
+                }
+                takeScreenCapture(storePath, captureName )
+
+            } catch (e: Exception) {
+                println(e.message)
+            }
+
+        */}else {
             result.notImplemented()
         }
     }
 
-    fun calculeResolution(screenSize: Point) {
+    fun calculeResolution(width: Int?, height: Int?) {
+
+        val windowManager = registrar.context().applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val screenSize = Point()
+        windowManager.defaultDisplay.getRealSize(screenSize); // in pixels
 
 //        val screenRatio: Double = (screenSize.x.toDouble() / screenSize.y.toDouble())
 //
@@ -123,9 +217,9 @@ class FlutterScreenRecordingPlugin(
 //
 //        mDisplayHeight = height.toInt()
 
-        // Use the actual screen size, same as on IOS
-        mDisplayWidth = screenSize.x;
-        mDisplayHeight = screenSize.y;
+        // Default to the actual screen size, same as on IOS
+        mDisplayWidth = width ?: screenSize.x;
+        mDisplayHeight = height ?: screenSize.y;
 
 /*        mDisplayWidth = 2560;
         mDisplayHeight = 1440;*/
@@ -138,25 +232,27 @@ class FlutterScreenRecordingPlugin(
         println("$mDisplayWidth x $mDisplayHeight")
     }
 
+
+
     fun initMediaRecorder() {
         mMediaRecorder?.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+
+        // This has to come *before* setOutputFormat
+        if (recordAudio!!) {
+            mMediaRecorder?.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
+        }
 
         //mMediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
         mMediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-        if (recordAudio!!) {
-            mMediaRecorder?.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
+        // This configuration has to come after setOutputFormat
+        if(recordAudio!!) {
             mMediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);//AAC //HE_AAC
             mMediaRecorder?.setAudioEncodingBitRate(16 * 44100);
             mMediaRecorder?.setAudioSamplingRate(44100);
         }
 
         mMediaRecorder?.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-
-        val windowManager = registrar.context().applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val screenSize = Point()
-        windowManager.defaultDisplay.getRealSize(screenSize);
-        calculeResolution(screenSize);
 
         println(mDisplayWidth.toString() + " " + mDisplayHeight);
         mMediaRecorder?.setVideoSize(mDisplayWidth, mDisplayHeight)
@@ -209,9 +305,9 @@ class FlutterScreenRecordingPlugin(
         val windowManager = registrar.context().applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val metrics: DisplayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(metrics)
-        val screenSize = Point()
-        windowManager.defaultDisplay.getRealSize(screenSize);
-        calculeResolution(screenSize)
+//        val screenSize = Point()
+//        windowManager.defaultDisplay.getRealSize(screenSize);
+//        calculeResolution(screenSize)
         mScreenDensity = metrics.densityDpi
         println("density " + mScreenDensity.toString())
         println("msurface " + mMediaRecorder?.getSurface())
@@ -242,5 +338,39 @@ class FlutterScreenRecordingPlugin(
             stopScreenSharing()
         }
     }
+
+/*
+    // ScreenCapture
+
+    fun takeScreenCapture(path: String, name: String) {
+        val bitmap: Bitmap = ImageUtils.loadBitmapFromView(this, view) //get Bitmap from the view
+        path = path + java.io.File.separator + name +".jpeg"
+        val imageFile: java.io.File = java.io.File(path)
+        var fout: OutputStream? = null
+        try {
+            fout = FileOutputStream(imageFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout)
+            fout.flush()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            fout.close()
+        }
+    }
+
+
+    fun loadBitmapFromView(context: Context, v: View): Bitmap? {
+        val dm: DisplayMetrics = context.getResources().getDisplayMetrics()
+        v.measure(MeasureSpec.makeMeasureSpec(dm.widthPixels, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(dm.heightPixels, MeasureSpec.EXACTLY))
+        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight())
+        val returnedBitmap: Bitmap = Bitmap.createBitmap(v.getMeasuredWidth(),
+                v.getMeasuredHeight(), Bitmap.Config.ARGB_8888)
+        val c = Canvas(returnedBitmap)
+        v.draw(c)
+        return returnedBitmap
+    }*/
 
 }
