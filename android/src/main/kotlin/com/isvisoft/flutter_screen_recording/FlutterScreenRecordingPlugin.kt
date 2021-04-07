@@ -22,55 +22,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.File
 import java.io.IOException
-/*import android.graphics.Point
-import javax.imageio.ImageReader
-
-import jdk.nashorn.internal.objects.NativeFunction.call
-import java.io.FileOutputStream
-
-import java.awt.Image
-
-import jdk.nashorn.internal.objects.NativeFunction.call
-import java.io.FileOutputStream
-
-import java.io.File
-
-import javax.swing.text.View
-
-import org.omg.CORBA.Environment
-
-import jdk.nashorn.internal.objects.NativeFunction.call
-import java.io.IOException
-
-import java.io.FileNotFoundException
-
-import java.io.FileOutputStream
-
-import java.io.File
-
-import org.omg.CORBA.Environment
-
-import jdk.nashorn.internal.objects.NativeFunction.call
-import java.awt.Canvas
-
-import javax.swing.text.View
-
-import jdk.nashorn.internal.objects.NativeFunction.call
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
+import android.graphics.Point
 
 
 
@@ -106,8 +58,6 @@ class FlutterScreenRecordingPlugin(
     private val SCREEN_RECORD_REQUEST_CODE = 333
     private val SCREEN_STOP_RECORD_REQUEST_CODE = 334
 
-
-
     private lateinit var _result: MethodChannel.Result
 
     companion object {
@@ -121,6 +71,7 @@ class FlutterScreenRecordingPlugin(
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
+
         if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 //initMediaRecorder();
@@ -154,10 +105,10 @@ class FlutterScreenRecordingPlugin(
                 val height = call.argument<Int?>("height");
 
 
-                println("Path :" + call.argument<String?>("path"))
-                if (call.argument<String?>("path") == null) {
+                println( "Path :" +call.argument<String?>("path"))
+                if (call.argument<String?>("path") == null){
                     storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
-                } else {
+                }else{
                     storePath = call.argument<String?>("path") + File.separator
                 }
                 calculeResolution(width, height);
@@ -182,23 +133,7 @@ class FlutterScreenRecordingPlugin(
                 result.success("")
             }
 
-            // Screen capture
-        /*}else if (call.method == "takeScreenCapture"){
-            try {
-
-                val captureName = call.argument<String?>("name")
-                if (call.argument<String?>("path") == null) {
-                    storePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath + File.separator
-                } else {
-                    storePath = call.argument<String?>("path") + File.separator
-                }
-                takeScreenCapture(storePath, captureName )
-
-            } catch (e: Exception) {
-                println(e.message)
-            }
-
-        */}else {
+        } else {
             result.notImplemented()
         }
     }
@@ -339,38 +274,5 @@ class FlutterScreenRecordingPlugin(
         }
     }
 
-/*
-    // ScreenCapture
-
-    fun takeScreenCapture(path: String, name: String) {
-        val bitmap: Bitmap = ImageUtils.loadBitmapFromView(this, view) //get Bitmap from the view
-        path = path + java.io.File.separator + name +".jpeg"
-        val imageFile: java.io.File = java.io.File(path)
-        var fout: OutputStream? = null
-        try {
-            fout = FileOutputStream(imageFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout)
-            fout.flush()
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            fout.close()
-        }
-    }
-
-
-    fun loadBitmapFromView(context: Context, v: View): Bitmap? {
-        val dm: DisplayMetrics = context.getResources().getDisplayMetrics()
-        v.measure(MeasureSpec.makeMeasureSpec(dm.widthPixels, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(dm.heightPixels, MeasureSpec.EXACTLY))
-        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight())
-        val returnedBitmap: Bitmap = Bitmap.createBitmap(v.getMeasuredWidth(),
-                v.getMeasuredHeight(), Bitmap.Config.ARGB_8888)
-        val c = Canvas(returnedBitmap)
-        v.draw(c)
-        return returnedBitmap
-    }*/
 
 }
