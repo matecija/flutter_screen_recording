@@ -30,6 +30,34 @@ var myResult: FlutterResult?
          
          self.recordAudio = (args?["audio"] as? Bool)!
          self.nameVideo = (args?["name"] as? String)!+".mp4"
+         var stringURL : String? = args?["path"] as? String
+         var isDir:ObjCBool = true
+
+
+         //print("Path : " + stringURL )
+
+            // No path given
+         //if ((args?["path"])!  == nil) {
+        if let strCheck = stringURL {
+
+            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
+            self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent(nameVideo))
+
+            //Checks if the path given does not exist or if it isn't a directory
+         } else if !(!FileManager.default.fileExists(atPath: stringURL! , isDirectory: &isDir)) {
+
+                let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
+                self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent(nameVideo))
+
+            //Path exists
+         } else{
+            //let stringURL : String? = (args?["path"] as? String)!
+            let fileURL : URL = URL(string: stringURL!)!
+            //self.videoOutputURL = URL(fileURLWithPath: fileURL.appendingPathComponent(nameVideo))
+            self.videoOutputURL = URL(string: stringURL!)!
+
+         }
+
          startRecording()
 
     }else if(call.method == "stopRecordScreen"){
@@ -48,8 +76,10 @@ var myResult: FlutterResult?
 
         //Use ReplayKit to record the screen
         //Create the file path to write to
-        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
-        self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent(nameVideo))
+
+        //let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
+
+        //self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent(nameVideo))
 
         //Check the file does not already exist by deleting it if it does
         do {
