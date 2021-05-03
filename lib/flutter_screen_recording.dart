@@ -37,7 +37,7 @@ class FlutterScreenRecording {
       height = null;
     }
     final bool start = await _channel.invokeMethod('startRecordScreen',
-        {"name": name, "audio": true, "width": width, "height": height, "path": path});
+        {"name": name, "audio": false, "width": width, "height": height, "path": path});
     return start;
   }
 
@@ -91,15 +91,6 @@ class FlutterScreenRecording {
     print("current datetime is ${DateTime.now()}");
   }
 
-  //Screen Capture
-  /*
-  static Future<String> startScreenCapture(String name, String path) async{
-
-    final String img = await _channel.invokeMethod('takeScreenCapture',
-        {"name": name, "path": path});
-    return ;
-  }
-*/
 
 
 }
