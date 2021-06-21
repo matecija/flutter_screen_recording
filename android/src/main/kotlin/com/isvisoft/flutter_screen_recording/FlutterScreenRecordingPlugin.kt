@@ -167,7 +167,9 @@ class FlutterScreenRecordingPlugin(
         }
 
         val permissionIntent = mProjectionManager?.createScreenCaptureIntent()
-        ActivityCompat.startActivityForResult(registrar.activity(), permissionIntent!!, SCREEN_RECORD_REQUEST_CODE, null)
+        if (permissionIntent != null) {
+            ActivityCompat.startActivityForResult(registrar.activity(), permissionIntent!!, SCREEN_RECORD_REQUEST_CODE, null)
+        }
     }
 
     fun stopRecordScreen() {
