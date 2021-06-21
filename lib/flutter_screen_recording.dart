@@ -26,26 +26,8 @@ class FlutterScreenRecording {
   /// Note that on some platforms it may cause an error if the video dimensions
   /// are not multiples of ten. See the example project for code.
   static Future<bool> startRecordScreen(String name,
-      { String path,
-        int width,
-        int height,
-        String titleNotification,
-        String messageNotification}) async {
-    await _maybeStartFGS(titleNotification, messageNotification);
-    if (width == null || height == null) {
-      width = null;
-      height = null;
-    }
-    final bool start = await _channel.invokeMethod('startRecordScreen',
-        {"name": name, "audio": false, "width": width, "height": height, "path": path});
-    return start;
-  }
-
-  /// Records the device screen, with audio, to a video file named
-  /// [name].mp4 on the device, saved in [path] directory. See [FlutterScreenRecoding.startRecordScreen]
-  /// for information about the parameters.
-  static Future<bool> startRecordScreenAndAudio(String name,
-      { String path, int width,
+      {String path,
+      int width,
       int height,
       String titleNotification,
       String messageNotification}) async {
@@ -54,8 +36,37 @@ class FlutterScreenRecording {
       width = null;
       height = null;
     }
-    final bool start = await _channel.invokeMethod('startRecordScreen',
-        {"name": name, "audio": true, "width": width, "height": height, "path": path});
+    final bool start = await _channel.invokeMethod('startRecordScreen', {
+      "name": name,
+      "audio": false,
+      "width": width,
+      "height": height,
+      "path": path
+    });
+    return start;
+  }
+
+  /// Records the device screen, with audio, to a video file named
+  /// [name].mp4 on the device, saved in [path] directory. See [FlutterScreenRecoding.startRecordScreen]
+  /// for information about the parameters.
+  static Future<bool> startRecordScreenAndAudio(String name,
+      {String path,
+      int width,
+      int height,
+      String titleNotification,
+      String messageNotification}) async {
+    await _maybeStartFGS(titleNotification, messageNotification);
+    if (width == null || height == null) {
+      width = null;
+      height = null;
+    }
+    final bool start = await _channel.invokeMethod('startRecordScreen', {
+      "name": name,
+      "audio": true,
+      "width": width,
+      "height": height,
+      "path": path
+    });
     return start;
   }
 
@@ -90,7 +101,4 @@ class FlutterScreenRecording {
   static void globalForegroundService() {
     print("current datetime is ${DateTime.now()}");
   }
-
-
-
 }
